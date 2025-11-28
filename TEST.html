@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寶寶可以原諒我嗎？</title>
+    <style>
+        /* --- 頁面美化樣式 --- */
+        body {
+            background-color: #ffe6e6; /* 淺粉紅背景 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* 防止按鈕變大時出現捲軸 */
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 90%;
+            width: 400px;
+            position: relative;
+        }
+
+        h1 {
+            color: #ff6b81;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .gif-container img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap; 
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        /* 左邊按鈕：同意 (粉色) */
+        #yesBtn {
+            background-color: #ff6b81;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 129, 0.4);
+            z-index: 10; /* 確保變大時蓋在上面 */
+        }
+
+        #yesBtn:hover {
+            background-color: #ff4757;
+            transform: scale(1.05);
+        }
+
+        /* 右邊按鈕：拒絕 (灰色) */
+        #noBtn {
+            background-color: #f1f2f6;
+            color: #747d8c;
+        }
+
+        #noBtn:hover {
+            background-color: #dfe4ea;
+        }
+
+        /* 成功後的文字樣式 */
+        .success-message {
+            color: #ff4757;
+            font-size: 2rem;
+            font-weight: bold;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="title">寶寶可以原諒我嗎?</h1>
+        
+        <div class="gif-container">
+            <img id="gifImage" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2QyNzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/LqLAaQ853a8a3N1q2z/giphy.gif" alt="Cute GIF">
+        </div>
+
+        <div class="btn-group" id="btnGroup">
+            <button id="yesBtn">勉強同意</button>
+            <button id="noBtn">我再生氣不要吵我</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 設定區：請在這裡更換你的 GIF 連結 ---
+        // 你可以使用網路上的 GIF 連結，或是把 GIF 放在同一個資料夾，填入檔名 (例如 "1.gif")
+        const gifs = [
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2QyNzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5NzE5YjI5JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/LqLAaQ853a8a3N1q2z/giphy.gif", // 0. 初始狀態 (哭哭/求原諒)
+            "https://media.giphy.com/media/l1AsyjZ8XLt1eZaGx/giphy.gif", // 1. 按第一次後 (更可憐)
+            "https://media.giphy.com/media/OPU6wzx8JrHna/giphy.gif",     // 2. 按第二次後 (超級可憐/跪下)
+            "https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif"      // 3. 最後成功 (開心/愛心/親親)
+        ];
+
+        // --- 變數宣告 ---
+        let step = 0; // 紀錄按了幾次右邊按鈕
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const gifImage = document.getElementById('gifImage');
+        const title = document.getElementById('title');
+        const btnGroup = document.getElementById('btnGroup');
+
+        // --- 右邊按鈕點擊事件 (拒絕) ---
+        noBtn.addEventListener('click', () => {
+            step++;
+            
+            // 1. 讓左邊按鈕變大 (每次變大 1.3 倍)
+            // 取得目前的字體大小，然後放大
+            const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
+            const currentPadding = parseFloat(window.getComputedStyle(yesBtn).paddingTop);
+            
+            yesBtn.style.fontSize = `${currentSize * 1.3}px`;
+            yesBtn.style.padding = `${currentPadding * 1.2}px ${currentPadding * 1.5}px`;
+
+            // 2. 更改圖片 (只要不超過陣列長度，就換下一張)
+            // 我們保留最後一張給成功畫面，所以 step 對應的 index 應該是 step，但不能超過 gifs.length - 2
+            if (step < gifs.length - 1) {
+                gifImage.src = gifs[step];
+            }
+
+            // 3. 更改右邊按鈕文字
+            if (step === 1) {
+                noBtn.innerText = "拜託放過我";
+            } else if (step === 2) {
+                noBtn.innerText = "拿520元去買臭豆腐吃";
+            } else {
+                // 第三次之後，文字可以固定，或是變成更求饒的話
+                noBtn.innerText = "真的不行嗎...🥺";
+            }
+        });
+
+        // --- 左邊按鈕點擊事件 (同意) ---
+        yesBtn.addEventListener('click', () => {
+            // 1. 換成最後一張成功的 GIF
+            gifImage.src = gifs[gifs.length - 1];
+            
+            // 2. 隱藏按鈕
+            btnGroup.style.display = 'none';
+
+            // 3. 更改標題文字
+            title.innerText = "寶貝最棒了！❤❤❤";
+            title.classList.add('success-message');
+        });
+
+    </script>
+</body>
+</html>
